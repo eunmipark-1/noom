@@ -1,6 +1,13 @@
-import http from "http";
+import https from "https";
 import SocketIO from "socket.io";
 import express from "express";
+import fs from "fs";
+
+
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert:fs.readFileSync('cert.pem')
+}
 
 const app = express();
 
@@ -10,8 +17,8 @@ app.use("/public", express.static(__dirname + "/public"));
 app.get("/", (_, res) => res.render("home"));
 app.get("/*", (_, res) => res.redirect("/"));
 
-const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer);
+const httpsServer = https.createServer(options, app);
+const wsServer = SocketIO(httpsServer);
 
 wsServer.on("connection", (socket) => {
   socket.on("join_room", (roomName) => {
@@ -29,5 +36,5 @@ wsServer.on("connection", (socket) => {
   });
 });
 
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
-httpServer.listen(3000, handleListen);
+const handleListen = () => console.log(`Listening on https://localhost:3000`);
+httpsServer.listen(3000, handleListen);
